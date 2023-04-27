@@ -1,3 +1,5 @@
+# **DISCLAIMER: THIS IS IN A VERY EARLY STATE AND STILL NEEDS ALOT OF WORK BEFORE BEING ABLE TO USE IT FOR ANYTHING** <!-- omit from toc -->
+
 # TeenyBot - *A Small Wireless enable robot to mess around with!!* <!-- omit from toc -->
 
 ![TeensyBot Img](imgs/TeenyBot.jpg)
