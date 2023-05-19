@@ -2,7 +2,6 @@
 #include "TeenyBot/Config.h"
 
 #define SERIAL Serial
-
 #define pwmWrite ledcWrite
 
 // Create the Controller's multiple tasks
