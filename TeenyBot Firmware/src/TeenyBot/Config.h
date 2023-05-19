@@ -22,8 +22,10 @@
 #define MOTOR_ENCODER_2A 27 //left encoder
 #define MOTOR_ENCODER_2B 14 //left encoder
 
-#define MOTOR_GEARING     20
-#define MOTOR_ENCODER_MULT 14
+#define MOTOR_GEARING     150
+#define MOTOR_ENCODER_MULT 7
 
-#define MOTOR_PWM_FREQ 30000
+#define MOTOR_PWM_FREQ 40000
 #define MOTOR_PWM_RESOLUTION 8
+
+#define MOTOR_RPM_MAX 60 // Theoretical Max ~105, Measured Theoretical Max ~75
