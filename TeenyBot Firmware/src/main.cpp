@@ -110,8 +110,14 @@ void task2(void *pvParameters)
   // run task code in infinite loop
   for (;;)
   {
-      pwmWrite(MOTOR_1A_PWM_CHANNEL, 255);
-      pwmWrite(MOTOR_2A_PWM_CHANNEL, 255);
+    digitalWrite(MOTOR_1A, HIGH);
+    pwmWrite(MOTOR_1A_PWM_CHANNEL, 255);
+    pwmWrite(MOTOR_2A_PWM_CHANNEL, 255);
+    vTaskDelay(2000);
+    digitalWrite(MOTOR_1A, LOW);
+    pwmWrite(MOTOR_1A_PWM_CHANNEL, 255);
+    pwmWrite(MOTOR_2A_PWM_CHANNEL, 255);
+    vTaskDelay(2000);
   }
 }
 
