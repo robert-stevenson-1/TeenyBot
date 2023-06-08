@@ -142,35 +142,50 @@ void task2(void *pvParameters)
       leftPWM  = constrain(y - x, -255, 255);
       rightPWM = constrain(y + x, -255, 255);
 
+
+      int lD, rD;
+      // get the direction to spin the left motor
+      if (leftPWM > 0){
+        lD = 1;
+      }else if (leftPWM < 0){
+        lD = -1;
+      }else{
+        lD = 0;
+      }
+      // get the direction to spin the right motor
+      if (rightPWM > 0){
+        rD = 1;
+      }else if (rightPWM < 0){
+        rD = -1;
+      }else{
+        rD = 0;
+      }
+      
       // print the pwm values
       SERIAL.print("left: ");
-      SERIAL.print(leftPWM);
+      SERIAL.print(leftPWM*lD);
       SERIAL.print(" Right: ");
-      SERIAL.print(rightPWM);
+      SERIAL.print(rightPWM*rD);
       SERIAL.println();
 
-      // get the direction to spin the left motor
-      int lD = leftPWM > 0 ? 1 : -1;
-      // get the direction to spin the right motor
-      int rD = rightPWM > 0 ? 1 : -1;
-      
-      if ( rD> 0){
+      if ( rD > 0){
         driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, rightPWM*rD);
       }else if (rD < 0){
         driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, rightPWM*rD);
+      }else{
+        // Stop the motors
+        driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, 0);
+        driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, 0);
       }
       if (lD > 0){
         driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, leftPWM*lD);
       }else if (lD < 0){
         driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, leftPWM*lD);
+      }else{
+        // Stop the motor
+        driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, 0);
+        driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, 0);
       }
-    // }else{
-    //   // Stop the motors
-    //   driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, 0);
-    //   driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, 0);
-    //   driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, 0);
-    //   driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, 0);
-    // }
     vTaskDelay(10);
   }
 }
