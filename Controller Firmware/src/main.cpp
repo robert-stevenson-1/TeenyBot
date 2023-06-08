@@ -38,12 +38,23 @@ void pwmSetup(int pin, int channel, int frequency, int resolution){
   ledcAttachPin(pin, channel);
 }
 
+int applyDeadZone(int value, int threshold) {
+    if (abs(value) < threshold) {
+        return 0;
+    } else {
+        return value;
+    }
+}
+
 void readJoyStick(ControllerData *ControllerData, int xPin, int yPin){
   ControllerData->x = analogRead(xPin);
   ControllerData->y = analogRead(yPin);
   // map the values
   ControllerData->x = map(ControllerData->x, 0, 4095, -255, 255);
   ControllerData->y = map(ControllerData->y, 0, 4095, -255, 255);
+  // apply the deadzone filtering
+  ControllerData->x = applyDeadZone(ControllerData->x, DEADZONE_THRESHOLD);
+  ControllerData->y = applyDeadZone(ControllerData->y, DEADZONE_THRESHOLD);
 }
 
 void updateButtons(ControllerData *ControllerData){
