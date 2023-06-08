@@ -1,11 +1,16 @@
 {
 	"folders": [
 		{
-			"path": "."
-		},
-		{
-			"path": "../Controller Firmware"
+			"path": "TeenyBot Firmware"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"*.tcc": "cpp",
+			"cmath": "cpp",
+			"numeric": "cpp",
+			"cinttypes": "cpp",
+			"cstdlib": "cpp"
+		}
+	}
 }

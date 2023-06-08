@@ -1,5 +1,9 @@
 #include <Arduino.h>
+#include <esp_now.h>
+#include <WiFi.h>
+
 #include "TeenyBot/Config.h"
+#include "Controller/Controller_Data.h"
 
 #define SERIAL Serial
 #define pwmWrite ledcWrite
@@ -21,6 +25,15 @@ long motorCountR = 0;
 // motor speed values
 double motorCurrentRPMR = 0;
 double motorCurrentRPML = 0;
+
+//String deviceName = "ESP 1";
+String deviceName = "TeenyBot";
+// REPLACE WITH THE MAC Address of your receiver 
+uint8_t broadcasterAddress[] = {0x94, 0xB9, 0x7E, 0xD9, 0xF9, 0x3C};
+String success;
+esp_now_peer_info_t peerInfo;
+ControllerData received;
+
 
 void leftMotorInterrupt()
 {
@@ -86,6 +99,16 @@ void initMotorEncoders()
   attachInterrupt(MOTOR_ENCODER_2A, leftMotorInterrupt, RISING);
 }
 
+
+void driveMotor(int motor_pin, int pwm_channel, int pwm_signal){
+  // print the pwm_signal
+  // SERIAL.print("PWM Signal:");
+  // SERIAL.println(pwm_signal);
+  digitalWrite(motor_pin, LOW);
+  // set the pwm signal for driving the motor
+  pwmWrite(pwm_channel, pwm_signal);
+}
+
 void task1(void *pvParameters)
 {
   SERIAL.print("Task1 running on core: ");
@@ -93,12 +116,8 @@ void task1(void *pvParameters)
   // run task code in infinite loop
   for (;;)
   {
-    SERIAL.print(motorCurrentRPML);
-    SERIAL.print(", ");
-    SERIAL.print(motorCurrentRPMR);
-    SERIAL.println();
-    
-    vTaskDelay(10);
+    // Put code to run on the core here
+    vTaskDelay(2000);
   }
 }
 
@@ -110,21 +129,82 @@ void task2(void *pvParameters)
   // run task code in infinite loop
   for (;;)
   {
-    digitalWrite(MOTOR_1A, HIGH);
-    pwmWrite(MOTOR_1A_PWM_CHANNEL, 255);
-    pwmWrite(MOTOR_2A_PWM_CHANNEL, 255);
-    vTaskDelay(2000);
-    digitalWrite(MOTOR_1A, LOW);
-    pwmWrite(MOTOR_1A_PWM_CHANNEL, 255);
-    pwmWrite(MOTOR_2A_PWM_CHANNEL, 255);
-    vTaskDelay(2000);
+    // Put code to run on the core here
+    
+    // check if the received joystick values is above the threshold
+    if (received.y > 30 || received.y < -30 ){
+      // get the direction to spin the motor
+      int d = received.y > 0 ? 1 : -1;
+      // Drive Forward?
+      if (d > 0){
+        driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, received.y*d);
+        driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, received.y*d);
+      }else if (d < 0){
+        driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, received.y*d);
+        driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, received.y*d);
+      }
+    }else{
+      // Stop the motors
+      driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, 0);
+      driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, 0);
+      driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, 0);
+      driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, 0);
+    }
+    vTaskDelay(10);
   }
+}
+
+// Callback when data is received
+void OnDataRecv(const uint8_t * mac, const uint8_t  *incomingData, int len) {
+  memcpy(&received, incomingData, sizeof(received));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+  
+  // Print the controller data
+  Serial.print(received.button1);
+  Serial.print(",");
+  Serial.print(received.button2);
+  Serial.print(",");
+  Serial.print(received.button3);
+  Serial.print(",");
+  Serial.print(received.x);
+  Serial.print(",");
+  Serial.print(received.y);
+  Serial.println();
+}
+
+void initControllerConnnection(){
+  WiFi.mode(WIFI_MODE_STA);
+  Serial.print("MAC Address: ");
+  Serial.println(WiFi.macAddress());
+
+  // Init ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+
+  // Register peer
+  memcpy(peerInfo.peer_addr, broadcasterAddress, 6);
+  peerInfo.channel = 0;  
+  peerInfo.encrypt = false;
+  
+  // Add peer        
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
+  // Register for a callback function that will be called when data is received
+  esp_now_register_recv_cb(OnDataRecv);
 }
 
 void setup()
 {
   // start the serial connection
   SERIAL.begin(115200);
+
+  // Setup ESP-Now Connection to Controller
+  initControllerConnnection();
 
   // initialise the the motor encoders
   initMotorEncoders();
