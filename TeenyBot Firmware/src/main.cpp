@@ -26,7 +26,6 @@ long motorCountR = 0;
 double motorCurrentRPMR = 0;
 double motorCurrentRPML = 0;
 
-//String deviceName = "ESP 1";
 String deviceName = "TeenyBot";
 // REPLACE WITH THE MAC Address of your receiver 
 uint8_t broadcasterAddress[] = {0x94, 0xB9, 0x7E, 0xD9, 0xF9, 0x3C};
@@ -99,7 +98,6 @@ void initMotorEncoders()
   attachInterrupt(MOTOR_ENCODER_2A, leftMotorInterrupt, RISING);
 }
 
-
 void driveMotor(int motor_pin, int pwm_channel, int pwm_signal){
   // print the pwm_signal
   // SERIAL.print("PWM Signal:");
@@ -135,13 +133,31 @@ void task2(void *pvParameters)
     if (received.y > 30 || received.y < -30 ){
       // get the direction to spin the motor
       int d = received.y > 0 ? 1 : -1;
-      // Drive Forward?
+
+      // pwm signals to set the motor speed
+      int leftPWM, rightPWM;
+
+      // Process the received data
+      int x = received.x;
+      int y = received.y;
+
+      // Map joystick values to PWM signal values
+      leftPWM  = constrain(y - x, -255, 255);
+      rightPWM = constrain(y + x, -255, 255);
+
+      // print the pwm values
+      SERIAL.print("left: ");
+      SERIAL.print(leftPWM);
+      SERIAL.print(" Right: ");
+      SERIAL.print(rightPWM);
+      SERIAL.println();
+
       if (d > 0){
-        driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, received.y*d);
-        driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, received.y*d);
+        driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, rightPWM*d);
+        driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, leftPWM*d);
       }else if (d < 0){
-        driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, received.y*d);
-        driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, received.y*d);
+        driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, rightPWM*d);
+        driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, leftPWM*d);
       }
     }else{
       // Stop the motors
