@@ -14,7 +14,8 @@
 
 // ESP-Now configuration and Variables
 #define DEVICE_NAME "ESP32_Controller"
-uint8_t broadcastAddress[] = {0xD4, 0xD4, 0xDA, 0x5E, 0x27, 0x50};
+// uint8_t broadcastAddress[] = {0xD4, 0xD4, 0xDA, 0x5E, 0x27, 0x50}; // Killed This one (?)
+uint8_t broadcastAddress[] = {0x94, 0xB9, 0x7E, 0xFA, 0xD9, 0x24};
 String success;
 esp_now_peer_info_t peerInfo;
 String received;
@@ -165,6 +166,11 @@ void loop() {
     // Check if it's time to send the data 
     if (currentMillis - previousSendTime >= sendInterval) {
       previousSendTime = currentMillis;
+
+      // FLIP the Joy Y axis value (Mount the Stick wrong)
+      data.y *= -1;
+
+      // Send the data
       sendData(&data);
 
       // Print the controller data
