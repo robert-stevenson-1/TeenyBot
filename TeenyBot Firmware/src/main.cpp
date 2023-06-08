@@ -121,7 +121,6 @@ void task1(void *pvParameters)
 
 void task2(void *pvParameters)
 {
-  delay(1000);
   SERIAL.print("Task2 running on core: ");
   SERIAL.println(xPortGetCoreID());
   // run task code in infinite loop
@@ -130,9 +129,7 @@ void task2(void *pvParameters)
     // Put code to run on the core here
     
     // check if the received joystick values is above the threshold
-    if (received.y > 30 || received.y < -30 ){
-      // get the direction to spin the motor
-      int d = received.y > 0 ? 1 : -1;
+    // if (received.y > 30 || received.y < -30 || received.x > 30 || received.x < -30 ){
 
       // pwm signals to set the motor speed
       int leftPWM, rightPWM;
@@ -152,20 +149,28 @@ void task2(void *pvParameters)
       SERIAL.print(rightPWM);
       SERIAL.println();
 
-      if (d > 0){
-        driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, rightPWM*d);
-        driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, leftPWM*d);
-      }else if (d < 0){
-        driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, rightPWM*d);
-        driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, leftPWM*d);
+      // get the direction to spin the left motor
+      int lD = leftPWM > 0 ? 1 : -1;
+      // get the direction to spin the right motor
+      int rD = rightPWM > 0 ? 1 : -1;
+      
+      if ( rD> 0){
+        driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, rightPWM*rD);
+      }else if (rD < 0){
+        driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, rightPWM*rD);
       }
-    }else{
-      // Stop the motors
-      driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, 0);
-      driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, 0);
-      driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, 0);
-      driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, 0);
-    }
+      if (lD > 0){
+        driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, leftPWM*lD);
+      }else if (lD < 0){
+        driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, leftPWM*lD);
+      }
+    // }else{
+    //   // Stop the motors
+    //   driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, 0);
+    //   driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, 0);
+    //   driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, 0);
+    //   driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, 0);
+    // }
     vTaskDelay(10);
   }
 }
