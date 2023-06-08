@@ -115,7 +115,7 @@ void task1(void *pvParameters)
   for (;;)
   {
     // Put code to run on the core here
-    vTaskDelay(2000);
+    vTaskDelay(50);
   }
 }
 
@@ -161,12 +161,12 @@ void task2(void *pvParameters)
         rD = 0;
       }
       
-      // print the pwm values
-      SERIAL.print("left: ");
-      SERIAL.print(leftPWM*lD);
-      SERIAL.print(" Right: ");
-      SERIAL.print(rightPWM*rD);
-      SERIAL.println();
+      // // print the pwm values
+      // SERIAL.print("left: ");
+      // SERIAL.print(leftPWM*lD);
+      // SERIAL.print(" Right: ");
+      // SERIAL.print(rightPWM*rD);
+      // SERIAL.println();
 
       if ( rD > 0){
         driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, rightPWM*rD);
