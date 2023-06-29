@@ -26,6 +26,7 @@ Bounce2::Button btnGreen = Bounce2::Button();
 Bounce2::Button btnYellow = Bounce2::Button();
 Bounce2::Button btnRed = Bounce2::Button();
 
+ControllerData oldData = {1, 1, false, false, false};
 ControllerData data;
 
 unsigned long previousLoopTime = 0;
@@ -168,7 +169,7 @@ void loop() {
     // Preform Main loop tasks here
     readJoyStick(&data, JOY_X_PIN, JOY_Y_PIN);
     updateButtons(&data);
-    
+
     // Check if it's time to send the data 
     if (currentMillis - previousSendTime >= sendInterval) {
       previousSendTime = currentMillis;
@@ -191,7 +192,18 @@ void loop() {
       SERIAL.print(",");
       SERIAL.print(data.y);
       SERIAL.println();
-      displayData(&data);
+        
+    }
+
+    //check if data has changed before displaying
+    if (!compareControllerData(oldData, data)){
+      //display it to the controller screen
+      // displayData(&data);
+      displayGUIData(&data);
     }
   }
+
+  // copy and store the data in an 'old' space ready for next pass
+  oldData = data;
+  // memcpy(&oldData, data, sizeof(data));
 }
