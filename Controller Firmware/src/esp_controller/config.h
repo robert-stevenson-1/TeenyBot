@@ -20,7 +20,7 @@
 #define JOY_X_PIN 32
 #define JOY_Y_PIN 33
 
-#define BUZZER_PIN 23
+// #define BUZZER_PIN 23
 
 
 

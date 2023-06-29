@@ -5,6 +5,7 @@
 
 #include "esp_controller/config.h"
 #include "esp_controller/Controller_Data.h"
+#include "esp_controller/controller_display.h""
 
 #define SERIAL Serial
 #define pwmWrite ledcWrite
@@ -134,6 +135,9 @@ void sendData(ControllerData* data) {
 
 void setup() {
   SERIAL.begin(115200);
+
+  //start the screen
+  setupDisplay();
 
   // ESP-Now Initialiation
   setup_esp_now();
