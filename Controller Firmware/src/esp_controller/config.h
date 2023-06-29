@@ -13,8 +13,8 @@
 #define BTN_YELLOW_PIN 14
 #define BTN_GREEN_PIN 27
 
-#define JOY_X_PIN 32
-#define JOY_Y_PIN 33
+#define JOY_X_PIN 33
+#define JOY_Y_PIN 32
 
 
 

@@ -175,6 +175,7 @@ void loop() {
 
       // FLIP the Joy Y axis value (Mount the Stick wrong)
       data.y *= -1;
+      // data.x *= -1;
 
       // Send the data
       sendData(&data);
