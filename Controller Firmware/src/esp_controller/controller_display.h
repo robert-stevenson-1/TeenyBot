@@ -17,6 +17,7 @@ extern TwoWire screenWire;
 extern Adafruit_SSD1306 display;
 
 void setupDisplay();
+void displayGUIData(ControllerData* data);
 void displayData(ControllerData* data);
 
 #endif

@@ -42,6 +42,63 @@ void setupDisplay(){
 
     Serial.println(F("Display Setup finished"));
 }
+    
+void displayGUIData(ControllerData* data){
+    display.clearDisplay();
+    // draw axis illustration arrow
+    display.fillTriangle(48, 15, 50, 11, 52, 15, 1);
+    display.fillTriangle(54, 11, 56, 15, 58, 11, 1);
+    display.fillTriangle(55, 3, 55, 7, 59, 5, 1);
+    display.fillTriangle(51, 3, 51, 7, 47, 5, 1);
+    // draw the frame
+    display.drawRect(0, 0, SCREEN_HEIGHT, 19, 1);
+    display.drawRect(0, 18, SCREEN_HEIGHT, 20, 1);
+    display.drawRect(0, 37, SCREEN_HEIGHT, SCREEN_WIDTH - 37, 1);
+
+    //set the text size
+    display.setTextSize(1);
+
+    // draw the button outline OR fill (it Button toggle True)
+    if (data->button1){
+        display.setTextColor(BLACK, WHITE);
+        display.fillRoundRect(4, 20, 17, 16, 3, 1);
+    }else{
+        display.setTextColor(WHITE);
+        display.drawRoundRect(4, 20, 17, 16, 3, 1);
+    }
+    display.setCursor(10, 24);
+    display.print("1");
+
+    if (data->button2){
+        display.setTextColor(BLACK, WHITE);
+        display.fillRoundRect(23, 20, 17, 16, 3, 1);
+    }else{
+        display.setTextColor(WHITE);
+        display.drawRoundRect(23, 20, 17, 16, 3, 1);
+    }
+    display.setCursor(29, 24);
+    display.print("2");
+
+    if (data->button3){
+        display.setTextColor(BLACK, WHITE);
+        display.fillRoundRect(42, 20, 17, 16, 3, 1);
+    }else{
+        display.setTextColor(WHITE);
+        display.drawRoundRect(42, 20, 17, 16, 3, 1);
+    }
+    display.setCursor(48, 24);
+    display.print("3");
+    
+    // draw the x and y values of the joystick
+    display.setTextColor(WHITE);
+    display.setCursor(2, 2);
+    display.print("X: ");
+    display.println(data->x);
+    display.setCursor(2, 10);
+    display.print("Y: ");
+    display.println(data->y);
+    display.display();
+}
 
 void displayData(ControllerData* data){
     display.clearDisplay();
@@ -50,5 +107,14 @@ void displayData(ControllerData* data){
     display.println(data->x);
     display.print("Y: ");
     display.println(data->y);
+    display.display();
+    display.print("btn1: ");
+    display.println(data->button1);
+    display.display();
+    display.print("btn2: ");
+    display.println(data->button2);
+    display.display();
+    display.print("btn3: ");
+    display.println(data->button3);
     display.display();
 }
