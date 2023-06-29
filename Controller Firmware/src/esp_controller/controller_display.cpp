@@ -1,4 +1,4 @@
-#include "controller_display.h""
+#include "controller_display.h"
 
 //Create a Wire connection object with my I2C pins
 TwoWire screenWire(0);
@@ -38,6 +38,7 @@ void setupDisplay(){
     display.display();
     delay(2000);
     display.clearDisplay();
+    display.display();
 
     Serial.println(F("Display Setup finished"));
     for(;;);
