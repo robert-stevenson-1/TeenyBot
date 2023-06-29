@@ -33,10 +33,6 @@ void setupDisplay(){
     display.setTextSize(1);
     display.setCursor(0,0);
 
-    //print a Test text  
-    display.println("This is a Test");
-    display.display();
-    delay(2000);
     display.clearDisplay();
     display.display();
 
@@ -53,7 +49,9 @@ void displayGUIData(ControllerData* data){
     // draw the frame
     display.drawRect(0, 0, SCREEN_HEIGHT, 19, 1);
     display.drawRect(0, 18, SCREEN_HEIGHT, 20, 1);
-    display.drawRect(0, 37, SCREEN_HEIGHT, SCREEN_WIDTH - 37, 1);
+    display.drawRect(0, 0, SCREEN_HEIGHT, SCREEN_WIDTH, 1);
+    display.drawRect(0, 0, SCREEN_HEIGHT, 19, 1);
+    display.drawRect(0, SCREEN_WIDTH - 11, SCREEN_HEIGHT, 11, 1);
 
     //set the text size
     display.setTextSize(1);
@@ -97,6 +95,18 @@ void displayGUIData(ControllerData* data){
     display.setCursor(2, 10);
     display.print("Y: ");
     display.println(data->y);
+    display.setCursor(2, SCREEN_WIDTH - 9);
+
+    // show if controller is connected to the robot
+    display.print("Conn: ");
+    // display.setCursor(32, SCREEN_WIDTH - 10);
+    display.drawRoundRect(32, SCREEN_WIDTH - 9, 30, 7, 2, 1);
+    if (data->connected){
+        display.fillRoundRect(48, SCREEN_WIDTH - 9, 15, 7, 2, 1);
+    }else{
+        display.fillRoundRect(32, SCREEN_WIDTH - 9, 15, 7, 2, 1);
+    }
+    // display.println(data->connected);
     display.display();
 }
 
