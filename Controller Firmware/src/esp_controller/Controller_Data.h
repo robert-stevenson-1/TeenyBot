@@ -10,6 +10,10 @@ struct ControllerData {
     bool button1;
     bool button2;
     bool button3;
+    // Connected to the robot?
+    bool connected;
+    uint8_t failedCount;
+    // char macAddr[18]; //Eg.0C:B8:15:F8:C2:68
 };
 
 
@@ -23,7 +27,10 @@ inline bool compareControllerData(ControllerData a, ControllerData b){
         a.y != b.y ||
         a.button1 != b.button1 ||
         a.button2 != b.button2 ||
-        a.button3 != b.button3)
+        a.button3 != b.button3 ||
+        a.connected != b.connected)
+        if (a.connected != b.connected)
+            Serial.println("Connected State changed");
         return false;
     return true;
 }

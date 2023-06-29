@@ -5,13 +5,10 @@
 
 #include "esp_controller/config.h"
 #include "esp_controller/Controller_Data.h"
-#include "esp_controller/controller_display.h""
+#include "esp_controller/controller_display.h"
 
 #define SERIAL Serial
 #define pwmWrite ledcWrite
-
-#define BUZZER_CHANNEL 0
-#define BUZZER_RESOLUTION 8
 
 // ESP-Now configuration and Variables
 #define DEVICE_NAME "ESP32_Controller"
@@ -26,7 +23,8 @@ Bounce2::Button btnGreen = Bounce2::Button();
 Bounce2::Button btnYellow = Bounce2::Button();
 Bounce2::Button btnRed = Bounce2::Button();
 
-ControllerData oldData = {1, 1, false, false, false};
+// assign impossible data to force inital drawing before it's overwritten with valid old data
+ControllerData oldData = {500, 500, false, false, false, false, 0}; 
 ControllerData data;
 
 unsigned long previousLoopTime = 0;
@@ -88,17 +86,27 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
-  if (status ==0){
+  if (status == 0){
     success = "Delivery Success :)";
+    data.failedCount = 0;
+    data.connected = true;
   }
   else{
     success = "Delivery Fail :(";
+    if (data.failedCount < 3)
+    {
+      data.failedCount++;
+    }else if (data.failedCount >= 3){
+      data.connected = false;
+    }
   }
 }
 
 void setup_esp_now(){
   WiFi.mode(WIFI_MODE_STA);
   Serial.print("MAC Address: ");
+  // WiFi.macAddress().toCharArray(data.macAddr, sizeof(data.macAddr));
+  // Serial.println(data.macAddr);
   Serial.println(WiFi.macAddress());
 
   // Init ESP-NOW
@@ -191,6 +199,10 @@ void loop() {
       SERIAL.print(data.x);
       SERIAL.print(",");
       SERIAL.print(data.y);
+      SERIAL.print(",");
+      SERIAL.print(data.failedCount);
+      SERIAL.print(",");
+      SERIAL.print(data.connected);
       SERIAL.println();
         
     }
