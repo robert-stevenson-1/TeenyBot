@@ -41,5 +41,5 @@ void setupDisplay(){
     display.display();
 
     Serial.println(F("Display Setup finished"));
-    for(;;);
 }
+
