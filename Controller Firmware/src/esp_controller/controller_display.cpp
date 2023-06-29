@@ -49,6 +49,6 @@ void displayData(ControllerData* data){
     display.print("X: ");
     display.println(data->x);
     display.print("Y: ");
-    display.println(data->x);
+    display.println(data->y);
     display.display();
 }
