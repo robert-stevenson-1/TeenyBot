@@ -139,13 +139,8 @@ void setup() {
   //start the screen
   setupDisplay();
 
-  // ESP-Now Initialiation
+  // ESP-Now Initialisation
   setup_esp_now();
-
-  // pwmSetup(BUZZER_PIN, BUZZER_CHANNEL, 2000, BUZZER_RESOLUTION);
-  // pinMode(LED_RED_PIN, OUTPUT);
-  // pinMode(LED_YELLOW_PIN, OUTPUT);  
-  // pinMode(LED_GREEN_PIN, OUTPUT);
 
   pinMode(JOY_X_PIN, INPUT);
   pinMode(JOY_Y_PIN, INPUT);
@@ -162,10 +157,6 @@ void setup() {
   btnGreen.attach(BTN_GREEN_PIN, INPUT_PULLUP);
   btnGreen.interval(DEBOUNCE_TIME);
   btnGreen.setPressedState(LOW);
-
-  // digitalWrite(LED_RED_PIN, HIGH);  
-  // digitalWrite(LED_YELLOW_PIN, HIGH);  
-  // digitalWrite(LED_GREEN_PIN, HIGH);  
 }
 
 void loop() {
@@ -199,6 +190,7 @@ void loop() {
       SERIAL.print(",");
       SERIAL.print(data.y);
       SERIAL.println();
+      displayData(&data);
     }
   }
 }
