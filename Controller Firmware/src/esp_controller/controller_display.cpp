@@ -43,3 +43,12 @@ void setupDisplay(){
     Serial.println(F("Display Setup finished"));
 }
 
+void displayData(ControllerData* data){
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.print("X: ");
+    display.println(data->x);
+    display.print("Y: ");
+    display.println(data->x);
+    display.display();
+}

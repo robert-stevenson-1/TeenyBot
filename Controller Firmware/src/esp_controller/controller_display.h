@@ -4,6 +4,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "Controller_Data.h"
 
 #define SCREEN_ADDRESS 0x3C // Check Board OR datasheet
 
@@ -16,5 +17,6 @@ extern TwoWire screenWire;
 extern Adafruit_SSD1306 display;
 
 void setupDisplay();
+void displayData(ControllerData* data);
 
 #endif
