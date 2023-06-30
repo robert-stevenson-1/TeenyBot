@@ -6,7 +6,8 @@
 // Controller Config
 #define NUM_OF_BTN 3
 #define DEBOUNCE_TIME 20
-#define DEADZONE_THRESHOLD 30 
+#define JOY_CENTER_VAL 2048
+#define DEADZONE_THRESHOLD 160
 #define MAX_SPEED 255
 
 // PIN Config
