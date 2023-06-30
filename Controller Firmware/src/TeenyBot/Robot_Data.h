@@ -5,9 +5,9 @@
 
 // Struct containing the Robot information
 struct RobotData {
-    uint8_t maxSpeed;
-    uint8_t curSpeedL;
-    uint8_t curSpeedR;
+    int maxSpeed;
+    int curSpeedL;
+    int curSpeedR;
     // Connected?
     bool connected;
     uint8_t failedCount;

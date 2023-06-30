@@ -15,9 +15,8 @@
 // ESP-Now configuration and Variables
 #define DEVICE_NAME "ESP32_Controller"
 uint8_t broadcastAddress[] = {0x94, 0xB9, 0x7E, 0xFA, 0xD9, 0x24};
-String success;
 esp_now_peer_info_t peerInfo;
-RobotData receivedData;
+RobotData receivedData = {255, 0, 0, false, 0};
 
 Bounce2::Button btnGreen = Bounce2::Button();
 Bounce2::Button btnYellow = Bounce2::Button();
@@ -74,22 +73,22 @@ void updateButtons(ControllerData *ControllerData){
 
 // Callback when data is received
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  memcpy(&receivedData, incomingData, sizeof(DEVICE_NAME));
-  Serial.print("Bytes received: ");
-  Serial.println(len);  
+  memcpy(&receivedData, incomingData, sizeof(receivedData));
+  // Serial.print("Bytes received: ");
+  // Serial.println(len);  
 }
 
 // Callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Serial.print("\r\nLast Packet Send Status:\t");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  // Serial.print("\r\nLast Packet Send Status: ");
+  // Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
   if (status == 0){
-    success = "Delivery Success :)";
+    // Delivery Success :)
     cntlData.failedCount = 0;
     cntlData.connected = true;
   }
   else{
-    success = "Delivery Fail :(";
+    // Delivery Fail :(
     if (cntlData.failedCount < 3)
     {
       cntlData.failedCount++;
@@ -179,7 +178,7 @@ void loop() {
       previousSendTime = currentMillis;
 
       // FLIP the Joy Y axis value (Mount the Stick wrong)
-      cntlData.y *= -1;
+      // cntlData.y *= -1;
       // data.x *= -1;
 
       // Send the data
