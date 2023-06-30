@@ -29,3 +29,4 @@
 #define MOTOR_PWM_RESOLUTION 8
 
 #define MOTOR_RPM_MAX 60 // Theoretical Max ~105, Measured Theoretical Max ~75
+#define MAX_PWM 255

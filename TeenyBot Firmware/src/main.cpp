@@ -3,6 +3,7 @@
 #include <WiFi.h>
 
 #include "TeenyBot/Config.h"
+#include "TeenyBot/Robot_Data.h"
 #include "Controller/Controller_Data.h"
 
 #define SERIAL Serial
@@ -28,11 +29,12 @@ double motorCurrentRPML = 0;
 
 String deviceName = "TeenyBot";
 // REPLACE WITH THE MAC Address of your receiver 
-uint8_t broadcasterAddress[] = {0x94, 0xB9, 0x7E, 0xD9, 0xF9, 0x3C};
+uint8_t broadcastAddress[] = {0x94, 0xB9, 0x7E, 0xD9, 0xF9, 0x3C};
 String success;
 esp_now_peer_info_t peerInfo;
 ControllerData received;
 
+RobotData robotData;
 
 void leftMotorInterrupt()
 {
@@ -107,6 +109,16 @@ void driveMotor(int motor_pin, int pwm_channel, int pwm_signal){
   pwmWrite(pwm_channel, pwm_signal);
 }
 
+void sendRobotData(RobotData* data) {
+  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) data, sizeof((*data)));
+  if (result == ESP_OK) {
+    Serial.println("Sent with success");
+  }
+  else {
+    Serial.println("Error sending the data");
+  }
+}
+
 void task1(void *pvParameters)
 {
   SERIAL.print("Task1 running on core: ");
@@ -115,6 +127,24 @@ void task1(void *pvParameters)
   for (;;)
   {
     // Put code to run on the core here
+    // Check what buttons where pressed and see if we need to do anything
+    // button 1 is pressed -> limit the speed to half
+    if (received.button1){
+      robotData.maxSpeed /= 2;
+    }else{
+      robotData.maxSpeed = MAX_PWM;
+    }
+    // button 2 is pressed -> 
+    if (received.button2){
+      // Do something here
+    }
+    // button 3 is pressed -> 
+    if (received.button3){
+      // Do something here
+    }
+
+
+    sendRobotData(&robotData);
     vTaskDelay(50);
   }
 }
@@ -127,9 +157,6 @@ void task2(void *pvParameters)
   for (;;)
   {
     // Put code to run on the core here
-    
-    // check if the received joystick values is above the threshold
-    // if (received.y > 30 || received.y < -30 || received.x > 30 || received.x < -30 ){
 
       // pwm signals to set the motor speed
       int leftPWM, rightPWM;
@@ -139,8 +166,8 @@ void task2(void *pvParameters)
       int y = received.y;
 
       // Map joystick values to PWM signal values
-      leftPWM  = constrain(y - x, -255, 255);
-      rightPWM = constrain(y + x, -255, 255);
+      leftPWM  = constrain(y - x, -robotData.maxSpeed, robotData.maxSpeed);
+      rightPWM = constrain(y + x, -robotData.maxSpeed, robotData.maxSpeed);
 
 
       int lD, rD;
@@ -160,13 +187,6 @@ void task2(void *pvParameters)
       }else{
         rD = 0;
       }
-      
-      // // print the pwm values
-      // SERIAL.print("left: ");
-      // SERIAL.print(leftPWM*lD);
-      // SERIAL.print(" Right: ");
-      // SERIAL.print(rightPWM*rD);
-      // SERIAL.println();
 
       if ( rD > 0){
         driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, rightPWM*rD);
