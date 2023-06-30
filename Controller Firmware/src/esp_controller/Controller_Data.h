@@ -31,8 +31,6 @@ inline bool compareControllerData(ControllerData a, ControllerData b){
         a.button2 != b.button2 ||
         a.button3 != b.button3 ||
         a.connected != b.connected)
-        if (a.connected != b.connected)
-            Serial.println("Connected State changed");
         return false;
     return true;
 }

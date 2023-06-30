@@ -12,7 +12,6 @@
 
 // ESP-Now configuration and Variables
 #define DEVICE_NAME "ESP32_Controller"
-// uint8_t broadcastAddress[] = {0xD4, 0xD4, 0xDA, 0x5E, 0x27, 0x50}; // Killed This one (?)
 uint8_t broadcastAddress[] = {0x94, 0xB9, 0x7E, 0xFA, 0xD9, 0x24};
 String success;
 esp_now_peer_info_t peerInfo;
@@ -175,23 +174,6 @@ void loop() {
 
     // Preform Main loop tasks here
     updateButtons(&data);
-
-    // Check what buttons where pressed and see if we need to do anything
-    // button 1 is pressed -> limit the speed to half
-    if (data.button1){
-      data.maxSpeed /= 2;
-    }else{
-      data.maxSpeed = MAX_SPEED;
-    }
-    // button 2 is pressed -> 
-    if (data.button2){
-      // Do something here
-    }
-    // button 3 is pressed -> 
-    if (data.button3){
-      // Do something here
-    }
-
     // read the joystick values
     readJoyStick(&data, JOY_X_PIN, JOY_Y_PIN);
 
