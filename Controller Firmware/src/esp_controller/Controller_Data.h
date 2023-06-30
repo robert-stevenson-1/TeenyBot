@@ -5,6 +5,8 @@
 
 // Struct containing the Controller state information
 struct ControllerData {
+    uint8_t maxSpeed;
+    uint8_t curSpeed;
     int x;
     int y;
     bool button1;

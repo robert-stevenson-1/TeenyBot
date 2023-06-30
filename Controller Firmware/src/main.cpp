@@ -18,14 +18,13 @@ String success;
 esp_now_peer_info_t peerInfo;
 String received;
 
-
 Bounce2::Button btnGreen = Bounce2::Button();
 Bounce2::Button btnYellow = Bounce2::Button();
 Bounce2::Button btnRed = Bounce2::Button();
 
 // assign impossible data to force inital drawing before it's overwritten with valid old data
-ControllerData oldData = {500, 500, false, false, false, false, 0}; 
-ControllerData data;
+ControllerData oldData = {MAX_SPEED, 0, 500, 500, false, false, false, false, 0}; 
+ControllerData data = {MAX_SPEED, 0, 0, 0, false, false, false, false, 0};
 
 unsigned long previousLoopTime = 0;
 unsigned long previousSendTime = 0;
@@ -50,8 +49,8 @@ void readJoyStick(ControllerData *ControllerData, int xPin, int yPin){
   ControllerData->x = analogRead(xPin);
   ControllerData->y = analogRead(yPin);
   // map the values
-  ControllerData->x = map(ControllerData->x, 0, 4095, -255, 255);
-  ControllerData->y = map(ControllerData->y, 0, 4095, -255, 255);
+  ControllerData->x = map(ControllerData->x, 0, 4095, -ControllerData->maxSpeed, ControllerData->maxSpeed);
+  ControllerData->y = map(ControllerData->y, 0, 4095, -ControllerData->maxSpeed, ControllerData->maxSpeed);
   // apply the deadzone filtering
   ControllerData->x = applyDeadZone(ControllerData->x, DEADZONE_THRESHOLD);
   ControllerData->y = applyDeadZone(ControllerData->y, DEADZONE_THRESHOLD);
@@ -175,8 +174,26 @@ void loop() {
     previousLoopTime = currentMillis;
 
     // Preform Main loop tasks here
-    readJoyStick(&data, JOY_X_PIN, JOY_Y_PIN);
     updateButtons(&data);
+
+    // Check what buttons where pressed and see if we need to do anything
+    // button 1 is pressed -> limit the speed to half
+    if (data.button1){
+      data.maxSpeed /= 2;
+    }else{
+      data.maxSpeed = MAX_SPEED;
+    }
+    // button 2 is pressed -> 
+    if (data.button2){
+      // Do something here
+    }
+    // button 3 is pressed -> 
+    if (data.button3){
+      // Do something here
+    }
+
+    // read the joystick values
+    readJoyStick(&data, JOY_X_PIN, JOY_Y_PIN);
 
     // Check if it's time to send the data 
     if (currentMillis - previousSendTime >= sendInterval) {
@@ -203,6 +220,10 @@ void loop() {
       SERIAL.print(data.failedCount);
       SERIAL.print(",");
       SERIAL.print(data.connected);
+      SERIAL.print(",");
+      SERIAL.print(data.maxSpeed);
+      SERIAL.print(",");
+      SERIAL.print(data.curSpeed);
       SERIAL.println();
         
     }
