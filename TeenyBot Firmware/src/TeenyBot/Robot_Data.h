@@ -5,8 +5,9 @@
 
 // Struct containing the Robot information
 struct RobotData {
-    uint8_t maxSpeed;
-    uint8_t curSpeed;
+    int maxSpeed;
+    int curSpeedL;
+    int curSpeedR;
     // Connected?
     bool connected;
     uint8_t failedCount;
@@ -21,7 +22,8 @@ struct RobotData {
 inline bool compareRobotData(RobotData a, RobotData b){
     if(
         a.maxSpeed != b.maxSpeed ||
-        a.curSpeed != b.curSpeed ||
+        a.curSpeedL != b.curSpeedL ||
+        a.curSpeedR != b.curSpeedR ||
         a.connected != b.connected)
         return false;
     return true;
