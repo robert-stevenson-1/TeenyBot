@@ -7,6 +7,8 @@
 #include "esp_controller/Controller_Data.h"
 #include "esp_controller/controller_display.h"
 
+#include "TeenyBot/Robot_Data.h"
+
 #define SERIAL Serial
 #define pwmWrite ledcWrite
 
@@ -15,15 +17,15 @@
 uint8_t broadcastAddress[] = {0x94, 0xB9, 0x7E, 0xFA, 0xD9, 0x24};
 String success;
 esp_now_peer_info_t peerInfo;
-String received;
+RobotData receivedData;
 
 Bounce2::Button btnGreen = Bounce2::Button();
 Bounce2::Button btnYellow = Bounce2::Button();
 Bounce2::Button btnRed = Bounce2::Button();
 
 // assign impossible data to force inital drawing before it's overwritten with valid old data
-ControllerData oldData = {MAX_SPEED, 0, 500, 500, false, false, false, false, 0}; 
-ControllerData data = {MAX_SPEED, 0, 0, 0, false, false, false, false, 0};
+ControllerData oldCntlData = {500, 500, false, false, false, false, 0}; 
+ControllerData cntlData = {0, 0, false, false, false, false, 0};
 
 unsigned long previousLoopTime = 0;
 unsigned long previousSendTime = 0;
@@ -48,8 +50,8 @@ void readJoyStick(ControllerData *ControllerData, int xPin, int yPin){
   ControllerData->x = analogRead(xPin);
   ControllerData->y = analogRead(yPin);
   // map the values
-  ControllerData->x = map(ControllerData->x, 0, 4095, -ControllerData->maxSpeed, ControllerData->maxSpeed);
-  ControllerData->y = map(ControllerData->y, 0, 4095, -ControllerData->maxSpeed, ControllerData->maxSpeed);
+  // ControllerData->x = map(ControllerData->x, 0, 4095, -255, 255);
+  // ControllerData->y = map(ControllerData->y, 0, 4095, -255, 255);
   // apply the deadzone filtering
   ControllerData->x = applyDeadZone(ControllerData->x, DEADZONE_THRESHOLD);
   ControllerData->y = applyDeadZone(ControllerData->y, DEADZONE_THRESHOLD);
@@ -72,12 +74,9 @@ void updateButtons(ControllerData *ControllerData){
 
 // Callback when data is received
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  memcpy(&received, incomingData, sizeof(DEVICE_NAME));
+  memcpy(&receivedData, incomingData, sizeof(DEVICE_NAME));
   Serial.print("Bytes received: ");
-  Serial.println(len);
-  
-  Serial.print("Received: ");
-  Serial.println(received);
+  Serial.println(len);  
 }
 
 // Callback when data is sent
@@ -86,16 +85,16 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
   if (status == 0){
     success = "Delivery Success :)";
-    data.failedCount = 0;
-    data.connected = true;
+    cntlData.failedCount = 0;
+    cntlData.connected = true;
   }
   else{
     success = "Delivery Fail :(";
-    if (data.failedCount < 3)
+    if (cntlData.failedCount < 3)
     {
-      data.failedCount++;
-    }else if (data.failedCount >= 3){
-      data.connected = false;
+      cntlData.failedCount++;
+    }else if (cntlData.failedCount >= 3){
+      cntlData.connected = false;
     }
   }
 }
@@ -103,8 +102,6 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 void setup_esp_now(){
   WiFi.mode(WIFI_MODE_STA);
   Serial.print("MAC Address: ");
-  // WiFi.macAddress().toCharArray(data.macAddr, sizeof(data.macAddr));
-  // Serial.println(data.macAddr);
   Serial.println(WiFi.macAddress());
 
   // Init ESP-NOW
@@ -173,52 +170,53 @@ void loop() {
     previousLoopTime = currentMillis;
 
     // Preform Main loop tasks here
-    updateButtons(&data);
+    updateButtons(&cntlData);
     // read the joystick values
-    readJoyStick(&data, JOY_X_PIN, JOY_Y_PIN);
+    readJoyStick(&cntlData, JOY_X_PIN, JOY_Y_PIN);
 
     // Check if it's time to send the data 
     if (currentMillis - previousSendTime >= sendInterval) {
       previousSendTime = currentMillis;
 
       // FLIP the Joy Y axis value (Mount the Stick wrong)
-      data.y *= -1;
+      cntlData.y *= -1;
       // data.x *= -1;
 
       // Send the data
-      sendData(&data);
+      sendData(&cntlData);
 
       // Print the controller data
-      SERIAL.print(data.button1);
+      SERIAL.print(cntlData.button1);
       SERIAL.print(",");
-      SERIAL.print(data.button2);
+      SERIAL.print(cntlData.button2);
       SERIAL.print(",");
-      SERIAL.print(data.button3);
+      SERIAL.print(cntlData.button3);
       SERIAL.print(",");
-      SERIAL.print(data.x);
+      SERIAL.print(cntlData.x);
       SERIAL.print(",");
-      SERIAL.print(data.y);
+      SERIAL.print(cntlData.y);
       SERIAL.print(",");
-      SERIAL.print(data.failedCount);
+      SERIAL.print(cntlData.failedCount);
       SERIAL.print(",");
-      SERIAL.print(data.connected);
+      SERIAL.print(cntlData.connected);
       SERIAL.print(",");
-      SERIAL.print(data.maxSpeed);
+      SERIAL.print(receivedData.maxSpeed);
       SERIAL.print(",");
-      SERIAL.print(data.curSpeed);
+      SERIAL.print(receivedData.curSpeedL);
+      SERIAL.print(",");
+      SERIAL.print(receivedData.curSpeedR);
       SERIAL.println();
         
     }
 
     //check if data has changed before displaying
-    if (!compareControllerData(oldData, data)){
+    if (!compareControllerData(oldCntlData, cntlData)){
       //display it to the controller screen
       // displayData(&data);
-      displayGUIData(&data);
+      displayGUIData(&cntlData);
     }
   }
 
   // copy and store the data in an 'old' space ready for next pass
-  oldData = data;
-  // memcpy(&oldData, data, sizeof(data));
+  oldCntlData = cntlData;
 }
