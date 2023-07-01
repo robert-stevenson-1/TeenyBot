@@ -16,7 +16,7 @@
 #define DEVICE_NAME "ESP32_Controller"
 uint8_t broadcastAddress[] = {0x94, 0xB9, 0x7E, 0xFA, 0xD9, 0x24};
 esp_now_peer_info_t peerInfo;
-RobotData receivedData = {255, 0, 0, false, 0};
+RobotData receivedRobotData = {255, 0, 0, false, 0};
 
 Bounce2::Button btnGreen = Bounce2::Button();
 Bounce2::Button btnYellow = Bounce2::Button();
@@ -73,7 +73,7 @@ void updateButtons(ControllerData *ControllerData){
 
 // Callback when data is received
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  memcpy(&receivedData, incomingData, sizeof(receivedData));
+  memcpy(&receivedRobotData, incomingData, sizeof(receivedRobotData));
   // Serial.print("Bytes received: ");
   // Serial.println(len);  
 }
@@ -199,11 +199,11 @@ void loop() {
       SERIAL.print(",");
       SERIAL.print(cntlData.connected);
       SERIAL.print(",");
-      SERIAL.print(receivedData.maxSpeed);
+      SERIAL.print(receivedRobotData.maxSpeed);
       SERIAL.print(",");
-      SERIAL.print(receivedData.curSpeedL);
+      SERIAL.print(receivedRobotData.curSpeedL);
       SERIAL.print(",");
-      SERIAL.print(receivedData.curSpeedR);
+      SERIAL.print(receivedRobotData.curSpeedR);
       SERIAL.println();
         
     }
@@ -212,7 +212,7 @@ void loop() {
     if (!compareControllerData(oldCntlData, cntlData)){
       //display it to the controller screen
       // displayData(&data);
-      displayGUIData(&cntlData);
+      displayGUIData(&cntlData, &receivedRobotData);
     }
   }
 

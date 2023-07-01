@@ -5,6 +5,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "Controller_Data.h"
+#include "TeenyBot/Robot_Data.h"
 
 #define SCREEN_ADDRESS 0x3C // Check Board OR datasheet
 
@@ -17,7 +18,7 @@ extern TwoWire screenWire;
 extern Adafruit_SSD1306 display;
 
 void setupDisplay();
-void displayGUIData(ControllerData* data);
-void displayData(ControllerData* data);
+void displayGUIData(ControllerData* cntlData, RobotData* robotData);
+void displayData(ControllerData* cntlData, RobotData* robotData);
 
 #endif
