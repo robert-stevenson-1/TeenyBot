@@ -57,7 +57,7 @@ void leftMotorInterrupt()
     motorCurrentRPML = rev;
   }
   motorLastTimeL = currentTime;
-  // Serial.println("left interupt");
+  // SERIAL.println("left interupt");
 }
 
 void rightMotorInterrupt()
@@ -80,7 +80,7 @@ void rightMotorInterrupt()
     motorCurrentRPMR = rev;
   }
   motorLastTimeR = currentTime;
-  // Serial.println("right interupt");
+  // SERIAL.println("right interupt");
 }
 
 void initMotorEncoders()
@@ -113,10 +113,10 @@ void driveMotor(int motor_pin, int pwm_channel, int pwm_signal){
 void sendRobotData(RobotData* data) {
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) data, sizeof((*data)));
   if (result == ESP_OK) {
-    // Serial.println("Sent with success");
+    // SERIAL.println("Sent with success");
   }
   else {
-    Serial.println("Error sending the data");
+    SERIAL.println("Error sending the data");
   }
 }
 
@@ -130,6 +130,8 @@ void task1(void *pvParameters)
     // Put code to run on the core here
     // check if the received data has changed
     if(!compareControllerData(oldReceived, received)){
+      // handle the pressed button data
+      #pragma region handle_button_states
       // Check what buttons where pressed and see if we need to do anything
       // button 1 is pressed -> limit the speed to half
       if (received.button1){
@@ -145,7 +147,8 @@ void task1(void *pvParameters)
       if (received.button3){
         // Do something here
       }
-      Serial.println("Recieved Data changed");
+      #pragma endregion handle_button_states
+
     }
 
     sendRobotData(&robotData);
@@ -160,11 +163,9 @@ void task2(void *pvParameters)
   // run task code in infinite loop
   for (;;)
   {
-    // Put code to run on the core here
-
+    // check if the robot is connected before trying to command the robot
+    if (robotData.connected){
       // Process the received data
-      // int x = received.x;
-      // int y = received.y;
       int x  = map(received.x, 0, 4095, -robotData.maxSpeed, robotData.maxSpeed);
       int y  = -map(received.y, 0, 4095, -robotData.maxSpeed, robotData.maxSpeed);
 
@@ -173,6 +174,8 @@ void task2(void *pvParameters)
       robotData.curSpeedR = constrain(y + x, -robotData.maxSpeed, robotData.maxSpeed);
 
       int lD, rD;
+
+      #pragma region Calculate_motor_direction
       // get the direction to spin the left motor
       if (robotData.curSpeedL > 0){
         lD = 1;
@@ -189,43 +192,58 @@ void task2(void *pvParameters)
       }else{
         rD = 0;
       }
+      #pragma endregion Calculate_motor_direction
 
-      // Serial.print("lDL, lDR: ");
-      // Serial.print(robotData.curSpeedL*lD);
-      // Serial.print(",");
-      // Serial.print(robotData.curSpeedR*rD);
-      // Serial.print("\tL, R: ");
-      // Serial.print(robotData.curSpeedL);
-      // Serial.print(",");
-      // Serial.print(robotData.curSpeedR);
-      // Serial.print("\tlD, rD: ");
-      // Serial.print(lD);
-      // Serial.print(",");
-      // Serial.print(rD);
-      // Serial.print("\tx, y: ");
-      // Serial.print(x);
-      // Serial.print(",");
-      // Serial.print(y);
-      // Serial.println();
+      // SERIAL.print("lDL, lDR: ");
+      // SERIAL.print(robotData.curSpeedL*lD);
+      // SERIAL.print(",");
+      // SERIAL.print(robotData.curSpeedR*rD);
+      // SERIAL.print("\tL, R: ");
+      // SERIAL.print(robotData.curSpeedL);
+      // SERIAL.print(",");
+      // SERIAL.print(robotData.curSpeedR);
+      // SERIAL.print("\tlD, rD: ");
+      // SERIAL.print(lD);
+      // SERIAL.print(",");
+      // SERIAL.print(rD);
+      // SERIAL.print("\tx, y: ");
+      // SERIAL.print(x);
+      // SERIAL.print(",");
+      // SERIAL.print(y);
+      // SERIAL.println();
 
+      // set the motor speeds
+      #pragma region Motor_Speed_Set
+
+      // set the right motor speed (with direction)
       if ( rD > 0){
         driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, robotData.curSpeedR*rD);
       }else if (rD < 0){
         driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, robotData.curSpeedR*rD);
       }else{
-        // Stop the motors
+        // Stop the Left motor
         driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, 0);
         driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, 0);
       }
+      // set the left motor speed (with direction)
       if (lD > 0){
         driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, robotData.curSpeedL*lD);
       }else if (lD < 0){
         driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, robotData.curSpeedL*lD);
       }else{
-        // Stop the motor
+        // Stop the Right motor
         driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, 0);
         driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, 0);
       }
+      #pragma endregion Motor_Speed_Set
+
+    }else{
+      // stop the robot from driving around when not connected
+      driveMotor(MOTOR_1A, MOTOR_1A_PWM_CHANNEL, 0);
+      driveMotor(MOTOR_1B, MOTOR_1B_PWM_CHANNEL, 0);
+      driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, 0);
+      driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, 0);
+    }
     vTaskDelay(10);
   }
 }
@@ -234,40 +252,40 @@ void task2(void *pvParameters)
 void OnDataRecv(const uint8_t * mac, const uint8_t  *incomingData, int len) {
   oldReceived = received;
   memcpy(&received, incomingData, sizeof(received));
-  // Serial.print("Bytes received: ");
-  // Serial.println(len);
+  // SERIAL.print("Bytes received: ");
+  // SERIAL.println(len);
   
   // Print the controller data
-  Serial.print(received.button1);
-  Serial.print(",");
-  Serial.print(received.button2);
-  Serial.print(",");
-  Serial.print(received.button3);
-  Serial.print(",");
-  Serial.print(received.x);
-  Serial.print(",");
-  Serial.print(received.y);
-  Serial.print(",");
-  Serial.print(received.failedCount);
-  Serial.print(",");
-  Serial.print(received.connected);
-  Serial.print(",");
-  Serial.print(robotData.failedCount);
-  Serial.print(",");
-  Serial.print(robotData.connected);
-  Serial.print(",");
-  Serial.print(robotData.maxSpeed);
-  Serial.print(",");
-  Serial.print(robotData.curSpeedL);
-  Serial.print(",");
-  Serial.print(robotData.curSpeedR);
-  Serial.println();
+  SERIAL.print(received.button1);
+  SERIAL.print(",");
+  SERIAL.print(received.button2);
+  SERIAL.print(",");
+  SERIAL.print(received.button3);
+  SERIAL.print(",");
+  SERIAL.print(received.x);
+  SERIAL.print(",");
+  SERIAL.print(received.y);
+  SERIAL.print(",");
+  SERIAL.print(received.failedCount);
+  SERIAL.print(",");
+  SERIAL.print(received.connected);
+  SERIAL.print(",");
+  SERIAL.print(robotData.failedCount);
+  SERIAL.print(",");
+  SERIAL.print(robotData.connected);
+  SERIAL.print(",");
+  SERIAL.print(robotData.maxSpeed);
+  SERIAL.print(",");
+  SERIAL.print(robotData.curSpeedL);
+  SERIAL.print(",");
+  SERIAL.print(robotData.curSpeedR);
+  SERIAL.println();
 }
 
 // Callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  // Serial.print("\r\nLast Packet Send Status: ");
-  // Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  // SERIAL.print("\r\nLast Packet Send Status: ");
+  // SERIAL.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
   if (status == 0){
     // Delivery Success :)
     robotData.failedCount = 0;
@@ -286,12 +304,12 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
 void initControllerConnnection(){
   WiFi.mode(WIFI_MODE_STA);
-  Serial.print("MAC Address: ");
-  Serial.println(WiFi.macAddress());
+  SERIAL.print("MAC Address: ");
+  SERIAL.println(WiFi.macAddress());
 
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK) {
-    Serial.println("Error initializing ESP-NOW");
+    SERIAL.println("Error initializing ESP-NOW");
     return;
   }
   // Once ESPNow is successfully Init, we will register for Send CB to
@@ -305,7 +323,7 @@ void initControllerConnnection(){
   
   // Add peer        
   if (esp_now_add_peer(&peerInfo) != ESP_OK){
-    Serial.println("Failed to add peer");
+    SERIAL.println("Failed to add peer");
     return;
   }
   // Register for a callback function that will be called when data is received
