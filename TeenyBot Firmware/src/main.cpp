@@ -14,14 +14,16 @@ TaskHandle_t TASK_task1;
 TaskHandle_t TASK_task2;
 
 // current motor Direction
-bool motorCurDirR = false; // false->forward
-bool motorCurDirL = false; // false->forward
+volatile bool motorCurDirR = false; // false->forward
+volatile bool motorCurDirL = false; // false->forward
 // last motor interrupt time
-long motorLastTimeR = 0;
-long motorLastTimeL = 0;
+volatile long motorLastTimeR = 0;
+volatile long motorLastTimeL = 0;
+volatile uint32_t motorCurrentTimeL = 0;
+volatile uint32_t motorCurrentTimeR = 0;
 // motor encoder counts
-long motorCountL = 0;
-long motorCountR = 0;
+volatile long motorCountL = 0;
+volatile long motorCountR = 0;
 
 // motor speed values
 double motorCurrentRPMR = 0;
@@ -39,48 +41,21 @@ RobotData robotData;
 
 void leftMotorInterrupt()
 {
+  motorLastTimeL = motorCurrentTimeL;
   motorCurDirL = digitalRead(MOTOR_ENCODER_2B);
   // track the encoder counts with respect to the direction it's turning
   motorCurDirL ? motorCountL-- : motorCountL++;
-
-  // calc the rpm
-  uint32_t currentTime = micros();
-  if (motorLastTimeL < currentTime)
-  {
-    // did not wrap around
-    double rev = currentTime - motorLastTimeL; // us
-    rev = 1.0 / rev;                           // rev per us
-    rev *= 1000000;                            // rev per sec
-    rev *= 60;                                 // rev per min
-    rev /= MOTOR_GEARING;                      // account for gear ratio
-    rev /= MOTOR_ENCODER_MULT;                 // account for multiple ticks per rotation
-    motorCurrentRPML = rev;
-  }
-  motorLastTimeL = currentTime;
-  // SERIAL.println("left interupt");
+  motorCurrentTimeL = micros();
 }
 
 void rightMotorInterrupt()
 {
+  motorLastTimeR = motorCurrentTimeR;
   motorCurDirR = digitalRead(MOTOR_ENCODER_1B);
   // track the encoder counts with respect to the direction it's turning
-  motorCurDirR ? motorCountR-- : motorCountR++;
+  motorCurDirR ? motorCountR-- : motorCountR++;  
+  motorCurrentTimeR = micros();
 
-  // calc the rpm
-  uint32_t currentTime = micros();
-  if (motorLastTimeR < currentTime)
-  {
-    // did not wrap around
-    double rev = currentTime - motorLastTimeR; // us
-    rev = 1.0 / rev;                           // rev per us
-    rev *= 1000000;                            // rev per sec
-    rev *= 60;                                 // rev per min
-    rev /= MOTOR_GEARING;                      // account for gear ratio
-    rev /= MOTOR_ENCODER_MULT;                 // account for multiple ticks per rotation
-    motorCurrentRPMR = rev;
-  }
-  motorLastTimeR = currentTime;
-  // SERIAL.println("right interupt");
 }
 
 void initMotorEncoders()
@@ -118,8 +93,9 @@ void sendRobotData(RobotData* data) {
   else {
     SERIAL.println("Error sending the data");
   }
-}
+} 
 
+// Handle Received Data
 void task1(void *pvParameters)
 {
   SERIAL.print("Task1 running on core: ");
@@ -127,7 +103,6 @@ void task1(void *pvParameters)
   // run task code in infinite loop
   for (;;)
   {
-    // Put code to run on the core here
     // check if the received data has changed
     if(!compareControllerData(oldReceived, received)){
       // handle the pressed button data
@@ -151,11 +126,40 @@ void task1(void *pvParameters)
 
     }
 
+    // Calculate the robot's current RPM
+    // calc the rpm
+    if (motorLastTimeR < motorCurrentTimeR)
+    {
+      // did not wrap around
+      double rev = motorCurrentTimeR - motorLastTimeR; // us
+      rev = 1.0 / rev;                           // rev per us
+      rev *= 1000000;                            // rev per sec
+      rev *= 60;                                 // rev per min
+      rev /= MOTOR_GEARING;                      // account for gear ratio
+      rev /= MOTOR_ENCODER_MULT;                 // account for multiple ticks per rotation
+      motorCurrentRPMR = rev;
+
+      // SERIAL.printf("rev: %f ||| \n", rev);
+    }
+    if (motorLastTimeL < motorCurrentTimeL)
+    {
+      // did not wrap around
+      double rev = motorCurrentTimeL - motorLastTimeL; // us
+      rev = 1.0 / rev;                           // rev per us
+      rev *= 1000000;                            // rev per sec
+      rev *= 60;                                 // rev per min
+      rev /= MOTOR_GEARING;                      // account for gear ratio
+      rev /= MOTOR_ENCODER_MULT;                 // account for multiple ticks per rotation
+      motorCurrentRPML = rev;
+
+      // SERIAL.printf("rev: %f ||| \n", rev);
+    }
     sendRobotData(&robotData);
-    vTaskDelay(100);
+    vTaskDelay(50);
   }
 }
 
+// Interact with Robot Sensor and Actions
 void task2(void *pvParameters)
 {
   SERIAL.print("Task2 running on core: ");
@@ -244,6 +248,11 @@ void task2(void *pvParameters)
       driveMotor(MOTOR_2A, MOTOR_2A_PWM_CHANNEL, 0);
       driveMotor(MOTOR_2B, MOTOR_2B_PWM_CHANNEL, 0);
     }
+
+    // Print Robot's RPM
+    SERIAL.printf("Left RPM: %f ||| Right RPM: %f ||| motorLastTimeR: %i ||| motorCurrentTimeR: %i ||| \n", 
+                  motorCurrentRPML, motorCurrentRPMR, motorLastTimeR, motorCurrentTimeR);
+
     vTaskDelay(10);
   }
 }
