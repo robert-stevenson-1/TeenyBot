@@ -34,12 +34,16 @@ Essentially this robot (and this repo itself) serves as a small prototyping plat
 ### Firmware
 
 - [ ] Communication
-  - [ ] Serial CMD (Debug and Dev ONLY)
-    - [ ] Send Data
+  - [X] Serial CMD (Debug and Dev ONLY)
+    - [ ] ~~Send Data~~
     - [X] Receive Data
   - [ ] Wi-Fi Communication
-    - [ ] Local Web-server
     - [X] ESP32-Based Controller (ESPNow)
+    - [ ] ESP32-Based Controller (Web Client/Server)
+      - [ ] Local Web-server/Relay-hub
+    - [ ] Autonomous Web-server
+      - [ ] Local
+      - [ ] Remote
   - [ ] BT Communication
 - [ ] Robot Control
   - [X] Forward and Backwards motor control
@@ -50,10 +54,14 @@ Essentially this robot (and this repo itself) serves as a small prototyping plat
       - [X] Controller
       - [ ] CMD/Path instructions
     - [ ] Stationary/on-the-spot rotation
+      - Can be done via the controller with precise control but there is not way to *lock* the rotation to occur *on-the-spot*.
 - [ ] Auto Stop when lost connection
   - [ ] to controller
-  - [ ] to Control server
+  - [ ] to server
 - [ ] Close-loop speed control
+  - [ ] Motor RPM Reading
+  - [ ] PID Motor Speed Controller
+    - Speed is a measurement in RPM
 - [ ] Orientation of the robot (**Hardware Dependant**)
   - [ ] ICM-20948 IMU
 - [ ] robot position (**Hardware Dependant**)
