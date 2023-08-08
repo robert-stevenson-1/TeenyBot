@@ -19,8 +19,8 @@ volatile bool motorCurDirL = false; // false->forward
 // last motor interrupt time
 volatile long motorLastTimeR = 0;
 volatile long motorLastTimeL = 0;
-volatile uint32_t motorCurrentTimeL = 0;
-volatile uint32_t motorCurrentTimeR = 0;
+volatile long motorCurrentTimeL = 0;
+volatile long motorCurrentTimeR = 0;
 // motor encoder counts
 volatile long motorCountL = 0;
 volatile long motorCountR = 0;
@@ -127,7 +127,7 @@ void task1(void *pvParameters)
     }
 
     // Calculate the robot's current RPM
-    // calc the rpm
+    // calc the rpm for right motor
     if (motorLastTimeR < motorCurrentTimeR)
     {
       // did not wrap around
@@ -140,7 +140,11 @@ void task1(void *pvParameters)
       motorCurrentRPMR = rev;
 
       // SERIAL.printf("rev: %f ||| \n", rev);
+    }else if (micros() - motorCurrentTimeR > ZERO_RPM_WAIT_TIME)
+    {
+      motorCurrentRPMR = 0;
     }
+    // calc the rpm for left motor
     if (motorLastTimeL < motorCurrentTimeL)
     {
       // did not wrap around
@@ -153,7 +157,13 @@ void task1(void *pvParameters)
       motorCurrentRPML = rev;
 
       // SERIAL.printf("rev: %f ||| \n", rev);
+    }else if (micros() - motorCurrentTimeL > ZERO_RPM_WAIT_TIME)
+    {
+      motorCurrentRPML = 0;
     }
+    // SERIAL.printf("Condition: %ld | curL: %i | micros: %ld \n", micros() - motorCurrentTimeL, motorCurrentTimeL, micros());
+
+    // send the robot data
     sendRobotData(&robotData);
     vTaskDelay(50);
   }
@@ -250,8 +260,7 @@ void task2(void *pvParameters)
     }
 
     // Print Robot's RPM
-    SERIAL.printf("Left RPM: %f ||| Right RPM: %f ||| motorLastTimeR: %i ||| motorCurrentTimeR: %i ||| \n", 
-                  motorCurrentRPML, motorCurrentRPMR, motorLastTimeR, motorCurrentTimeR);
+    SERIAL.printf("Left RPM: %.2f ||| Right RPM: %.2f ||| \n", motorCurrentRPML, motorCurrentRPMR);
 
     vTaskDelay(10);
   }
