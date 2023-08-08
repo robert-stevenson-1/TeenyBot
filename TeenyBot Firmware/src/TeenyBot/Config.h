@@ -17,10 +17,10 @@
 #define MOTOR_2A_PWM_CHANNEL 2 // PWM Channel
 #define MOTOR_2B_PWM_CHANNEL 3 // PWM Channel
 
-#define MOTOR_ENCODER_1A 13 //right encoder
-#define MOTOR_ENCODER_2B 12 //right encoder
-#define MOTOR_ENCODER_2A 27 //left encoder
-#define MOTOR_ENCODER_1B 14 //left encoder
+#define MOTOR_ENCODER_1A 27 //right encoder
+#define MOTOR_ENCODER_2B 14 //right encoder
+#define MOTOR_ENCODER_2A 13 //left encoder
+#define MOTOR_ENCODER_1B 12 //left encoder
 
 #define MOTOR_GEARING     150
 #define MOTOR_ENCODER_MULT 7
