@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use any part of this software, please cite it as below."
+title: "TeenyBot"
+authors:
+  - family-names: "Stevenson"
+    given-names: "Robert"
+    orcid: "https://orcid.org/0009-0009-7981-0850"
+date-released: "2023-04-27"
+version: "0.0.1"
+repository-code: "https://github.com/robert-stevenson-1/TeenyBot"
+license: "MIT"
+keywords: ["arduino", "robot", "cpp", "robotics", "esp32", "wifi", "bluetooth", "platformio", "wireless", "differential drive", "esp32-arduino"]
+abstract: >
+   (WIP) Small Wireless enable robot to mess around with!!
+references: []
